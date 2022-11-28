@@ -17,6 +17,7 @@
 package com.google.ar.core.examples.java.helloar;
 
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.media.Image;
 import android.opengl.GLES30;
@@ -27,6 +28,7 @@ import android.util.Log;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.PopupMenu;
 import android.widget.Toast;
@@ -81,6 +83,7 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * This is a simple example that shows how to create an augmented reality (AR) application using the
@@ -94,8 +97,105 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
   private static final String SEARCHING_PLANE_MESSAGE = "Searching for surfaces...";
   private static final String WAITING_FOR_TAP_MESSAGE = "Tap on a surface to place an object.";
 
+  String texturename;
+  String virtualObjectTextureDir;
+  Random rng;
+
+  Button rollingButton = findViewById(R.id.buttonroll);
+
   // See the definition of updateSphericalHarmonicsCoefficients for an explanation of these
   // constants.
+
+  public void rollDice() {
+    int randomNum = rng.nextInt(20) + 1;
+
+    virtualObjectTextureDir = getString(R.string.picName, randomNum);
+
+//    switch (randomNum) {
+//      case 1:
+//        texturename = getString(R.string.oneup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 2:
+//        texturename = getString(R.string.twoup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 3:
+//        texturename = getString(R.string.threeup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 4:
+//        texturename = getString(R.string.fourup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 5:
+//        texturename = getString(R.string.fiveup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 6:
+//        texturename = getString(R.string.sixup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 7:
+//        texturename = getString(R.string.sevenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 8:
+//        texturename = getString(R.string.eightup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 9:
+//        texturename = getString(R.string.nineup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 10:
+//        texturename = getString(R.string.tenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 11:
+//        texturename = getString(R.string.elevenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 12:
+//        texturename = getString(R.string.twelveup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 13:
+//        texturename = getString(R.string.thirteenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 14:
+//        texturename = getString(R.string.fourteenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 15:
+//        texturename = getString(R.string.fifteenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 16:
+//        texturename = getString(R.string.sixteenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 17:
+//        texturename = getString(R.string.seventeenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 18:
+//        texturename = getString(R.string.eighteenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 19:
+//        texturename = getString(R.string.nineteenup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//      case 20:
+//        texturename = getString(R.string.twentyup);
+//        virtualObjectTextureDir = texturename;
+//        break;
+//    }
+
+  }
+
   private static final float[] sphericalHarmonicFactors = {
     0.282095f,
     -0.325735f,
@@ -205,6 +305,17 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
             popup.show();
           }
         });
+
+    Intent intent = new Intent(this, HelloArActivity.class);
+
+    rollingButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+
+        startActivity(intent);
+      }
+    });
+
   }
 
   /** Menu button to launch feature specific settings. */
@@ -339,6 +450,9 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
 
   @Override
   public void onSurfaceCreated(SampleRender render) {
+
+    rollDice();
+
     // Prepare the rendering objects. This involves reading shaders and 3D model files, so may throw
     // an IOException.
     try {
@@ -396,11 +510,13 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
           new Mesh(
               render, Mesh.PrimitiveMode.POINTS, /*indexBuffer=*/ null, pointCloudVertexBuffers);
 
+      virtualObjectTextureDir = texturename;
+
       // Virtual object to render (ARCore pawn)
       virtualObjectAlbedoTexture =
           Texture.createFromAsset(
               render,
-              "models/pawn_albedo.png",
+              "models/D20-highrez-texture-metallic-map.png",
               Texture.WrapMode.CLAMP_TO_EDGE,
               Texture.ColorFormat.SRGB);
       virtualObjectAlbedoInstantPlacementTexture =
@@ -416,7 +532,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
               Texture.WrapMode.CLAMP_TO_EDGE,
               Texture.ColorFormat.LINEAR);
 
-      virtualObjectMesh = Mesh.createFromAsset(render, "models/pawn.obj");
+      virtualObjectMesh = Mesh.createFromAsset(render, "models/DiceCorrectRotation.obj");
       virtualObjectShader =
           Shader.createFromAssets(
                   render,
@@ -640,7 +756,7 @@ public class HelloArActivity extends AppCompatActivity implements SampleRender.R
             || (trackable instanceof DepthPoint)) {
           // Cap the number of objects created. This avoids overloading both the
           // rendering system and ARCore.
-          if (wrappedAnchors.size() >= 20) {
+          if (wrappedAnchors.size() >= 1) {
             wrappedAnchors.get(0).getAnchor().detach();
             wrappedAnchors.remove(0);
           }
@@ -863,3 +979,5 @@ class WrappedAnchor {
     return trackable;
   }
 }
+
+
